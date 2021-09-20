@@ -1,2 +1,2 @@
-# threejs-boilerplate
-threejs boilerplate code to make starting new projects faster
+# 3-Dimensional-Pathfinder
+A pathfinder visualizer made with ThreeJS
