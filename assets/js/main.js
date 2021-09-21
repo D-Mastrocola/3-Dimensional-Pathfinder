@@ -13,7 +13,7 @@ function main() {
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
   camera.position.z = 50;
 
-  const controls = new OrbitControls( camera, renderer.domElement );
+  const controls = new OrbitControls(camera, renderer.domElement);
 
   const scene = new THREE.Scene();
 
@@ -24,15 +24,9 @@ function main() {
     light.position.set(-1, 2, 4);
     const light2 = new THREE.DirectionalLight(color, intensity);
     light2.position.set(2, -2, -1);
-    scene.add(light,light2);
+    scene.add(light, light2);
   }
 
-  const boxWidth = 1;
-  const boxHeight = 1;
-  const boxDepth = 1;
-  const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
-
-  const material = new THREE.MeshPhongMaterial({ color: 0x44aa88 }); // greenish blue
   function getRandomColor() {
     function randomValue() {
       return Math.round(Math.random() * 255);
@@ -53,9 +47,9 @@ function main() {
     return "rgb(" + rgb;
   }
   function getRandomPosition(max) {
-    let randX = Math.round(Math.random() *  max) - max/2;
-    let randY = Math.round(Math.random() *  max) - max/2;
-    let randZ = Math.round(Math.random() * -max) + max/2;
+    let randX = Math.round(Math.random() * max) - max / 2;
+    let randY = Math.round(Math.random() * max) - max / 2;
+    let randZ = Math.round(Math.random() * -max) + max / 2;
 
     return { x: randX, y: randY, z: randZ };
   }
@@ -69,20 +63,55 @@ function main() {
     }
     return needResize;
   }
-  let nodes = [];
+  let unconnectedNodes = [];
   for (let i = 0; i < 20; i++) {
     let newPos = getRandomPosition(50);
 
-    for (let j = 0; i < nodes.length; j++) {
-      if (nodes[j].pos.distanceTo(newPos) <= 2.5) {
+    for (let j = 0; i < unconnectedNodes.length; j++) {
+      if (unconnectedNodes[j].pos.distanceTo(newPos) <= 2.5) {
         newPos = getRandomPosition(50);
         j = 0;
       }
     }
     let node = new Node(newPos, scene, getRandomColor());
-    nodes.push(node);
+    unconnectedNodes.push(node);
   }
 
+  let connectedNodes = []
+  while (unconnectedNodes.length !== 0) {
+    let currentNode = unconnectedNodes[0];
+    unconnectedNodes.splice(0, 1);
+
+    let connections = [unconnectedNodes[Math.floor(Math.random() * unconnectedNodes.length - 1) + 1], unconnectedNodes[Math.floor(Math.random() * unconnectedNodes.length - 1) + 1]]
+    if (connections[0] == connections[1]) {
+      if (unconnectedNodes.length == 1) {
+        connections.splice(0, 1);
+        unconnectedNodes.splice(0, 1);
+      } else {
+        while (connections[0] == connections[1]) {
+          connections = [unconnectedNodes[Math.floor(Math.random() * unconnectedNodes.length - 1) + 1], unconnectedNodes[Math.floor(Math.random() * unconnectedNodes.length - 1) + 1]]
+        }
+      }
+    }
+    //create a blue LineBasicMaterial
+    const material = new THREE.LineBasicMaterial({ color: 0x222222 });
+    const points = [currentNode.pos];
+    points.push(connections[0].pos);
+    if (connections.length > 1) {
+      points.push(currentNode.pos)
+      points.push(connections[1].pos)
+    }
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+
+    currentNode.connections = connections;
+    connectedNodes.push(currentNode);
+
+  }
+  console.log(connectedNodes)
+  console.log(unconnectedNodes)
   function render(time) {
     time *= 0.001; // convert time to seconds
 

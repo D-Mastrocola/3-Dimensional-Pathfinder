@@ -4,6 +4,8 @@ class Node {
     this.pos = new THREE.Vector3(pos.x, pos.y, pos.z);
     this.color = color;
     this.addMeshToScene(scene);
+    this.start = false;
+    this.end = false;
   }
   addMeshToScene(scene) {
     const geometry = new THREE.SphereGeometry(1, 32, 16);
@@ -12,7 +14,6 @@ class Node {
     scene.add(sphere);
 
     sphere.position.set(this.pos.x, this.pos.y, this.pos.z);
-    console.log(sphere.position);
   }
 }
 
