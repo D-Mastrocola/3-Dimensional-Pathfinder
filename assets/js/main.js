@@ -11,7 +11,7 @@ function main() {
   const near = 0.1;
   const far = 500;
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  camera.position.z = 50;
+  camera.position.z = 175;
 
   const controls = new OrbitControls(camera, renderer.domElement);
 
@@ -38,7 +38,7 @@ function main() {
 
     //Makes suren that all nodes are easily visible by adding to their value if below a threshold
     if (r + g + b < 200) {
-      let num = 150 - r + g + b;
+      let num = 200 - r + g + b;
       r += num;
       g += num;
       b += num;
@@ -64,12 +64,12 @@ function main() {
     return needResize;
   }
   let unconnectedNodes = [];
-  for (let i = 0; i < 20; i++) {
-    let newPos = getRandomPosition(50);
+  for (let i = 0; i < 16; i++) {
+    let newPos = getRandomPosition(200);
 
     for (let j = 0; i < unconnectedNodes.length; j++) {
       if (unconnectedNodes[j].pos.distanceTo(newPos) <= 2.5) {
-        newPos = getRandomPosition(50);
+        newPos = getRandomPosition(200);
         j = 0;
       }
     }
@@ -94,7 +94,7 @@ function main() {
       }
     }
     //create a blue LineBasicMaterial
-    const material = new THREE.LineBasicMaterial({ color: 0x222222 });
+    const material = new THREE.LineBasicMaterial({ color: 0x444444 });
     const points = [currentNode.pos];
     points.push(connections[0].pos);
     if (connections.length > 1) {
@@ -110,8 +110,9 @@ function main() {
     connectedNodes.push(currentNode);
 
   }
-  console.log(connectedNodes)
-  console.log(unconnectedNodes)
+  connectedNodes[0].start = true;
+  connectedNodes[connectedNodes.length-1].end = true;
+  
   function render(time) {
     time *= 0.001; // convert time to seconds
 
