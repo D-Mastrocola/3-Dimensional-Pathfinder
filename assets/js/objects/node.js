@@ -6,14 +6,28 @@ class Node {
     this.addMeshToScene(scene);
     this.start = false;
     this.end = false;
+    this.geometry;
+    this.material;
+    this.sphere;
+    this.connections = [];
   }
   addMeshToScene(scene) {
-    const geometry = new THREE.SphereGeometry(4, 32, 16);
-    const material = new THREE.MeshPhongMaterial({ color:  this.color});
-    const sphere = new THREE.Mesh(geometry, material);
-    scene.add(sphere);
+    this.geometry = new THREE.SphereGeometry(8, 32, 16);
+    this.material = new THREE.MeshBasicMaterial({ color: this.color });
+    this.sphere = new THREE.Mesh(this.geometry, this.material);
+    scene.add(this.sphere);
 
-    sphere.position.set(this.pos.x, this.pos.y, this.pos.z);
+    this.sphere.position.set(this.pos.x, this.pos.y, this.pos.z);
+  }
+  setStart() {
+    this.color = 0xff0000;
+    this.sphere.material = new THREE.MeshBasicMaterial({ color: this.color });
+    this.start = true;
+  }
+  setEnd() {
+    this.color = 0x00ff00;
+    this.sphere.material = new THREE.MeshBasicMaterial({ color: this.color });
+    this.end = true;
   }
 }
 

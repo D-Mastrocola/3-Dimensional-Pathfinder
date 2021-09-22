@@ -1,6 +1,11 @@
 import * as THREE from "./threejs/three.module.js";
-import { OrbitControls } from './threejs/OrbitControls.js';
+import { OrbitControls } from "./threejs/OrbitControls.js";
 import Node from "./objects/node.js";
+import Connection from './objects/connection.js';
+
+console.log('start')
+
+let nodeCountInput = $("#node-count");
 
 function main() {
   const canvas = document.querySelector("#canvas");
@@ -53,6 +58,7 @@ function main() {
 
     return { x: randX, y: randY, z: randZ };
   }
+
   function resizeRendererToDisplaySize(renderer) {
     const canvas = renderer.domElement;
     const width = canvas.clientWidth;
@@ -63,56 +69,70 @@ function main() {
     }
     return needResize;
   }
-  let unconnectedNodes = [];
-  for (let i = 0; i < 16; i++) {
-    let newPos = getRandomPosition(200);
 
-    for (let j = 0; i < unconnectedNodes.length; j++) {
-      if (unconnectedNodes[j].pos.distanceTo(newPos) <= 2.5) {
-        newPos = getRandomPosition(200);
-        j = 0;
-      }
+  function init() {
+    while (scene.children.length > 0) {
+      scene.remove(scene.children[0]);
+      console.log(scene.children.length)
     }
-    let node = new Node(newPos, scene, getRandomColor());
-    unconnectedNodes.push(node);
-  }
+    let unconnectedNodes = [];
+    for (let i = 0; i < nodeCountInput.val(); i++) {
+      let newPos = getRandomPosition(200);
 
-  let connectedNodes = []
-  while (unconnectedNodes.length !== 0) {
-    let currentNode = unconnectedNodes[0];
-    unconnectedNodes.splice(0, 1);
-
-    let connections = [unconnectedNodes[Math.floor(Math.random() * unconnectedNodes.length - 1) + 1], unconnectedNodes[Math.floor(Math.random() * unconnectedNodes.length - 1) + 1]]
-    if (connections[0] == connections[1]) {
-      if (unconnectedNodes.length == 1) {
-        connections.splice(0, 1);
-        unconnectedNodes.splice(0, 1);
-      } else {
-        while (connections[0] == connections[1]) {
-          connections = [unconnectedNodes[Math.floor(Math.random() * unconnectedNodes.length - 1) + 1], unconnectedNodes[Math.floor(Math.random() * unconnectedNodes.length - 1) + 1]]
+      for (let j = 0; i < unconnectedNodes.length; j++) {
+        if (unconnectedNodes[j].pos.distanceTo(newPos) <= 16) {
+          newPos = getRandomPosition(200);
+          j = 0;
         }
       }
-    }
-    //create a blue LineBasicMaterial
-    const material = new THREE.LineBasicMaterial({ color: 0x444444 });
-    const points = [currentNode.pos];
-    points.push(connections[0].pos);
-    if (connections.length > 1) {
-      points.push(currentNode.pos)
-      points.push(connections[1].pos)
+      let node = new Node(newPos, scene, 0xffffff /*getRandomColor()*/);
+      unconnectedNodes.push(node);
     }
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const line = new THREE.Line(geometry, material);
-    scene.add(line);
+    let connectedNodes = [];
+    let connectionsArr = [];
+    while (unconnectedNodes.length > 0) {
+      let currentNode = unconnectedNodes[0];
+      unconnectedNodes.splice(0, 1);
+      
+      let indexs = [
+        Math.floor(Math.random() * unconnectedNodes.length - 1) + 1,
+        Math.floor(Math.random() * unconnectedNodes.length - 1) + 1,
+      ];
 
-    currentNode.connections = connections;
-    connectedNodes.push(currentNode);
+      let connections = [
+        unconnectedNodes[indexs[0]],
+        unconnectedNodes[indexs[1]],
+      ];
+      if (indexs[0] == indexs[1]) {
+        if (unconnectedNodes.length == 1) {
+          connections.splice(0, 1);
+          unconnectedNodes.splice(0, 1);
+        } else {
+          while (indexs[0] == indexs[1]) {
+            indexs[0] =
+              Math.floor(Math.random() * unconnectedNodes.length - 1) + 1;
+          }
+          connections = [
+            unconnectedNodes[indexs[0]],
+            unconnectedNodes[indexs[1]],
+          ];
+        }
+      }
+      
+      connectedNodes.push(currentNode);
+      for (let i = 0; i < connections.length; i++) {
+        connectionsArr.push(new Connection([currentNode, connections[i]], 0x444444, scene));
+      }
+      
+    }
+    connectedNodes[0].setStart();
+    connectedNodes[connectedNodes.length - 1].setEnd();
 
+    requestAnimationFrame(render);
   }
-  connectedNodes[0].start = true;
-  connectedNodes[connectedNodes.length-1].end = true;
-  
+  init();
+
   function render(time) {
     time *= 0.001; // convert time to seconds
 
@@ -126,6 +146,12 @@ function main() {
 
     requestAnimationFrame(render);
   }
-  requestAnimationFrame(render);
+
+  nodeCountInput.on("change", () => {
+    console.log('change')
+    let value = nodeCountInput.val();
+    $("#node-count-label").text("Nodes: " + value);
+    init();
+  });
 }
 main();
